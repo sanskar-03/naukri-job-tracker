@@ -23,21 +23,17 @@ logger = logging.getLogger(__name__)
 st.set_page_config(page_title="Naukri Job Tracker", page_icon="💼", layout="wide")
 
 def ensure_playwright_browser():
-    """Install Chromium on first run when the deployment environment does not have it."""
-    marker = Path("/tmp/naukri_playwright_chromium_ready")
-    if marker.exists():
-        return
+    """Verify Chromium is available; packages.txt/requirements.txt install it on deploy."""
     try:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            try:
-                p.chromium.executable_path
-                browser = p.chromium.launch(headless=True)
-                browser.close()
-                marker.touch()
-                return
-            except Exception:
-                pass
+            browser = p.chromium.launch(headless=True)
+            browser.close()
+            return
+    except Exception:
+        pass
+
+    try:
         subprocess.run(
             [sys.executable, "-m", "playwright", "install", "chromium"],
             check=True,
@@ -45,7 +41,6 @@ def ensure_playwright_browser():
             stderr=subprocess.STDOUT,
             text=True,
         )
-        marker.touch()
     except Exception as exc:
         logger.exception("Playwright browser setup failed: %s", exc)
         raise RuntimeError(
@@ -55,7 +50,7 @@ def ensure_playwright_browser():
         ) from exc
 
 st.title("💼 Naukri Job Tracker")
-st.caption("Python + Playwright • Excel persistence • Job URL/ID deduplication")
+st.caption("Python + Playwright • opens Chromium, reads job cards, closes browser • Excel persistence • Job URL/ID deduplication")
 
 with st.sidebar:
     st.header("Search")

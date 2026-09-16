@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import time
 from datetime import datetime
@@ -105,8 +106,12 @@ def scrape_naukri_jobs(keyword: str, location: str, pages: int = 1, timeout_ms: 
     logger.info("Starting Playwright scrape: %s", url)
 
     with sync_playwright() as p:
+        # Streamlit Cloud has no visible desktop, so headless is the safe default.
+        # For local testing, set PLAYWRIGHT_HEADLESS=false to watch Chromium open,
+        # load Naukri, extract the cards, and close normally.
+        headless = os.getenv("PLAYWRIGHT_HEADLESS", "true").strip().lower() not in {"0", "false", "no"}
         browser = p.chromium.launch(
-            headless=True,
+            headless=headless,
             args=["--disable-dev-shm-usage", "--no-sandbox"],
         )
         context = browser.new_context(

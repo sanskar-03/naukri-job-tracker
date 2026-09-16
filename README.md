@@ -4,7 +4,9 @@ A portfolio-ready Python application that uses **Playwright** to extract Naukri.
 
 ## Features
 
-- Playwright-based browser scraping.
+- Playwright-based browser scraping using Chromium.
+- The scraper opens a normal Chromium browser context, loads the search page, reads the job cards, and closes the browser after the run.
+- `PLAYWRIGHT_HEADLESS=true` is the default for Streamlit Cloud; set it to `false` locally if you want to watch the browser window.
 - Extracts:
   - Job ID
   - Job Title
@@ -65,6 +67,9 @@ source .venv/bin/activate
 ```bash
 pip install -r requirements.txt
 python -m playwright install chromium
+
+# Optional local visual-browser mode (PowerShell):
+$env:PLAYWRIGHT_HEADLESS="false"
 ```
 
 If Linux reports missing browser libraries, use:
@@ -156,3 +161,10 @@ naukri-job-tracker/
 - [x] Logging
 - [x] requirements.txt
 - [x] README setup instructions
+
+
+## Browser behavior
+
+This project does not use stealth plugins, CAPTCHA solvers, proxy rotation, or other bot-protection bypasses. Playwright controls Chromium for the requested scrape, then closes it. If Naukri returns HTTP 403 or a challenge page, the application stops and reports the block instead of fabricating results.
+
+For Streamlit Cloud, the browser runs headlessly because the cloud server has no desktop display. This is still a real Chromium page load; only the window is not visible to the person using the web app.
